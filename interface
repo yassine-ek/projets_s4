@@ -1,0 +1,87 @@
+import java.awt.EventQueue;
+import javax.swing.JFrame;
+import javax.swing.JTextField;
+import javax.swing.JPanel;
+import java.awt.GridLayout;
+import javax.swing.JLabel;
+import javax.swing.JButton;
+
+public class projet_v2 {
+
+	private JFrame frame;
+	private JTextField textFieldchaine;
+	private JTextField textFielddebut;
+	private JTextField textFieldfin;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					projet_v2 window = new projet_v2();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public projet_v2() {
+		initialize();
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frame = new JFrame();
+		frame.setBounds(100, 100, 1196, 840);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(new GridLayout(1, 0, 0, 0));
+
+		JPanel panel = new JPanel();
+		frame.getContentPane().add(panel);
+		panel.setLayout(null);
+
+		JLabel chaine = new JLabel("chaine de caractere");
+		chaine.setBounds(10, 9, 97, 14);
+		panel.add(chaine);
+
+		textFieldchaine = new JTextField();
+		textFieldchaine.setBounds(117, 6, 96, 20);
+		panel.add(textFieldchaine);
+		textFieldchaine.setColumns(10);
+
+		JLabel indice_debut = new JLabel("New label");
+		indice_debut.setBounds(10, 34, 49, 14);
+		panel.add(indice_debut);
+
+		textFielddebut = new JTextField();
+		textFielddebut.setBounds(91, 34, 96, 20);
+		panel.add(textFielddebut);
+		textFielddebut.setColumns(10);
+
+		textFieldfin = new JTextField();
+		textFieldfin.setBounds(91, 65, 96, 20);
+		panel.add(textFieldfin);
+		textFieldfin.setColumns(10);
+
+		JLabel lblNewLabelfin = new JLabel("New label");
+		lblNewLabelfin.setBounds(10, 57, 49, 14);
+		panel.add(lblNewLabelfin);
+
+		JButton visualiser = new JButton("Visualiser");
+		visualiser.setBounds(10, 158, 138, 37);
+		panel.add(visualiser);
+
+		JButton Réinitialiser = new JButton("Réinitialiser");
+		Réinitialiser.setBounds(798, 158, 138, 37);
+		panel.add(Réinitialiser);
+	}
+}
