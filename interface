@@ -1,87 +1,90 @@
-import java.awt.EventQueue;
-import javax.swing.JFrame;
-import javax.swing.JTextField;
-import javax.swing.JPanel;
-import java.awt.GridLayout;
-import javax.swing.JLabel;
-import javax.swing.JButton;
+import javax.swing.*;
+import java.awt.*;
+import javax.swing.border.EmptyBorder;
 
-public class projet_v2 {
+public class projet_v2 extends JFrame {
 
-	private JFrame frame;
-	private JTextField textFieldchaine;
-	private JTextField textFielddebut;
-	private JTextField textFieldfin;
+	private JPanel contentPane;
+	private JTextField textFieldString;
+	private JTextField textFieldStart;
+	private JTextField textFieldEnd;
+	private JTextArea textAreaOutput;
+	private JButton btnBefore;
+	private JButton btnNext;
 
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					projet_v2 window = new projet_v2();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		EventQueue.invokeLater(() -> {
+			try {
+				projet_v2 frame = new projet_v2();
+				frame.setVisible(true);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		});
 	}
 
-	/**
-	 * Create the application.
-	 */
 	public projet_v2() {
-		initialize();
+		setTitle("Visualisateur de Substring - Projet V2");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(800, 600);
+		setLocationRelativeTo(null);
+
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(15, 15, 15, 15));
+		contentPane.setLayout(new BorderLayout(10, 10));
+		setContentPane(contentPane);
+
+		JPanel inputPanel = createInputPanel();
+		contentPane.add(inputPanel, BorderLayout.NORTH);
+
+		JScrollPane scrollPane = new JScrollPane();
+		textAreaOutput = new JTextArea();
+		textAreaOutput.setFont(new Font("Consolas", Font.PLAIN, 14));
+		textAreaOutput.setEditable(false);
+		scrollPane.setViewportView(textAreaOutput);
+		contentPane.add(scrollPane, BorderLayout.CENTER);
+
+		JPanel navPanel = createNavigationPanel();
+		contentPane.add(navPanel, BorderLayout.SOUTH);
 	}
 
-	/**
-	 * Initialize the contents of the frame.
-	 */
-	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 1196, 840);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new GridLayout(1, 0, 0, 0));
+	private JPanel createInputPanel() {
+		JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
 
-		JPanel panel = new JPanel();
-		frame.getContentPane().add(panel);
-		panel.setLayout(null);
+		panel.add(new JLabel("Chaîne de caractères:"));
+		textFieldString = new JTextField();
+		panel.add(textFieldString);
 
-		JLabel chaine = new JLabel("chaine de caractere");
-		chaine.setBounds(10, 9, 97, 14);
-		panel.add(chaine);
+		panel.add(new JLabel("Indice de début:"));
+		textFieldStart = new JTextField();
+		panel.add(textFieldStart);
 
-		textFieldchaine = new JTextField();
-		textFieldchaine.setBounds(117, 6, 96, 20);
-		panel.add(textFieldchaine);
-		textFieldchaine.setColumns(10);
+		panel.add(new JLabel("Indice de fin:"));
+		textFieldEnd = new JTextField();
+		panel.add(textFieldEnd);
 
-		JLabel indice_debut = new JLabel("New label");
-		indice_debut.setBounds(10, 34, 49, 14);
-		panel.add(indice_debut);
+		JButton btnVisualize = new JButton("Visualiser");
+		panel.add(btnVisualize);
 
-		textFielddebut = new JTextField();
-		textFielddebut.setBounds(91, 34, 96, 20);
-		panel.add(textFielddebut);
-		textFielddebut.setColumns(10);
+		JButton btnReset = new JButton("Réinitialiser");
+		panel.add(btnReset);
 
-		textFieldfin = new JTextField();
-		textFieldfin.setBounds(91, 65, 96, 20);
-		panel.add(textFieldfin);
-		textFieldfin.setColumns(10);
+		return panel;
+	}
 
-		JLabel lblNewLabelfin = new JLabel("New label");
-		lblNewLabelfin.setBounds(10, 57, 49, 14);
-		panel.add(lblNewLabelfin);
+	private JPanel createNavigationPanel() {
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
 
-		JButton visualiser = new JButton("Visualiser");
-		visualiser.setBounds(10, 158, 138, 37);
-		panel.add(visualiser);
+		btnBefore = new JButton("← Étape précédente");
+		btnNext = new JButton("Étape suivante →");
 
-		JButton Réinitialiser = new JButton("Réinitialiser");
-		Réinitialiser.setBounds(798, 158, 138, 37);
-		panel.add(Réinitialiser);
+		Font btnFont = new Font("Arial", Font.BOLD, 14);
+		btnBefore.setFont(btnFont);
+		btnNext.setFont(btnFont);
+
+		panel.add(btnBefore);
+		panel.add(btnNext);
+
+		return panel;
 	}
 }
