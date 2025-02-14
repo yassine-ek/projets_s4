@@ -1,0 +1,241 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.border.EmptyBorder;
+
+public class projet_v2 extends JFrame {
+
+    private JTextField textFieldString; // Zone de saisie du mot
+    private JTextField resultCharField; // charAt(i)
+    private JTextField lengthField;     // string.length
+    private JTextField resultSubstringField; // substring(i,j)
+    private JTextField iValueField;     // valeur de i
+    private JTextField jValueField;     // valeur de j
+
+    private WordPanel wordPanel;        // Panel central qui affiche le mot et la règle
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new projet_v2().setVisible(true);
+        });
+    }
+
+    public projet_v2() {
+        setTitle("Visualisateur de Chaîne - Interface Complète");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(900, 500);
+        setLocationRelativeTo(null);
+
+        JPanel contentPane = new JPanel(new BorderLayout(10, 10));
+        contentPane.setBorder(new EmptyBorder(15, 15, 15, 15));
+        setContentPane(contentPane);
+
+        contentPane.add(createTopPanel(), BorderLayout.NORTH);
+        
+        wordPanel = new WordPanel();
+        JScrollPane scrollPane = new JScrollPane(wordPanel);
+        scrollPane.setPreferredSize(new Dimension(0, 250));
+        contentPane.add(scrollPane, BorderLayout.CENTER);
+
+        contentPane.add(createBottomPanel(), BorderLayout.SOUTH);
+    }
+
+    private JPanel createTopPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+
+        JLabel label = new JLabel("Mot à saisir:");
+        textFieldString = new JTextField();
+
+        JButton btnShow = new JButton("Afficher");
+        btnShow.addActionListener(e -> {
+            wordPanel.setWord(textFieldString.getText());
+            wordPanel.setI(0);
+            wordPanel.setJ(0);
+        });
+
+        JButton btnReset = new JButton("Réinitialiser");
+        btnReset.addActionListener(e -> {
+            textFieldString.setText("");
+            wordPanel.setWord("");
+            wordPanel.setI(0);
+            wordPanel.setJ(0);
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        buttonPanel.add(btnShow);
+        buttonPanel.add(btnReset);
+
+        panel.add(label, BorderLayout.WEST);
+        panel.add(textFieldString, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.EAST);
+
+        return panel;
+    }
+
+    private JPanel createBottomPanel() {
+        JPanel panel = new JPanel(new GridLayout(3, 4, 10, 5));
+        panel.setBorder(new EmptyBorder(10, 0, 0, 0));
+
+        // Ligne 1 : charAt(i) | champ résultat | "valeur de i" | champ i
+        panel.add(new JLabel("charAt(i):", SwingConstants.RIGHT));
+        resultCharField = new JTextField();
+        resultCharField.setEditable(false);
+        panel.add(resultCharField);
+
+        panel.add(new JLabel("valeur de i :", SwingConstants.RIGHT));
+        iValueField = new JTextField();
+        panel.add(iValueField);
+
+        // Ligne 2 : string.length | champ résultat | "valeur de j" | champ j
+        panel.add(new JLabel("string.length:", SwingConstants.RIGHT));
+        lengthField = new JTextField();
+        lengthField.setEditable(false);
+        panel.add(lengthField);
+
+        panel.add(new JLabel("valeur de j :", SwingConstants.RIGHT));
+        jValueField = new JTextField();
+        panel.add(jValueField);
+
+        // Ligne 3 : substring(i,j) | champ résultat | (cases vides pour alignement)
+        panel.add(new JLabel("substring(i,j):", SwingConstants.RIGHT));
+        resultSubstringField = new JTextField();
+        resultSubstringField.setEditable(false);
+        panel.add(resultSubstringField);
+
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+
+        return panel;
+    }
+
+    static class WordPanel extends JPanel {
+        private String word = "";
+        private int i = 0; // index de début
+        private int j = 0; // index de fin
+
+        private int[] charPositions;
+        private Font bigFont = new Font("SansSerif", Font.BOLD, 36);
+
+        public WordPanel() {
+            setBackground(Color.WHITE);
+
+            MouseAdapter adapter = new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    int index = getCharIndexAtX(e.getX());
+                    if (index != -1) {
+                        i = index;
+                        j = index;
+                        repaint();
+                    }
+                }
+
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    int index = getCharIndexAtX(e.getX());
+                    if (index != -1) {
+                        j = index;
+                        repaint();
+                    }
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    int index = getCharIndexAtX(e.getX());
+                    if (index != -1) {
+                        j = index;
+                        repaint();
+                    }
+                }
+            };
+            addMouseListener(adapter);
+            addMouseMotionListener(adapter);
+        }
+
+        public void setWord(String w) {
+            if (w == null) w = "";
+            this.word = w;
+            computeCharPositions();
+            repaint();
+        }
+
+        public void setI(int newI) {
+            if (newI < 0) newI = 0;
+            if (newI >= word.length() && !word.isEmpty()) {
+                newI = word.length() - 1;
+            }
+            i = newI;
+            repaint();
+        }
+
+        public void setJ(int newJ) {
+            if (newJ < 0) newJ = 0;
+            if (newJ > word.length()) {
+                newJ = word.length();
+            }
+            j = newJ;
+            repaint();
+        }
+
+        private void computeCharPositions() {
+            if (word.isEmpty()) {
+                charPositions = null;
+                return;
+            }
+            charPositions = new int[word.length()];
+            FontMetrics fm = getFontMetrics(bigFont);
+
+            int x = 50;
+            for (int k = 0; k < word.length(); k++) {
+                charPositions[k] = x;
+                x += fm.charWidth(word.charAt(k)) + 5;
+            }
+        }
+
+        private int getCharIndexAtX(int mouseX) {
+            if (charPositions == null) return -1;
+            FontMetrics fm = getFontMetrics(bigFont);
+            for (int k = 0; k < word.length(); k++) {
+                int cx = charPositions[k];
+                int cw = fm.charWidth(word.charAt(k));
+                if (mouseX >= cx && mouseX <= cx + cw) {
+                    return k;
+                }
+            }
+            return -1;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            g.setFont(bigFont);
+            FontMetrics fm = g.getFontMetrics();
+
+            int centerY = getHeight() / 2;
+            int baseline = centerY + fm.getAscent() / 2;
+            int x = 50;
+            for (int k = 0; k < word.length(); k++) {
+                String c = String.valueOf(word.charAt(k));
+                g.drawString(c, x, baseline);
+                x += fm.charWidth(word.charAt(k)) + 5;
+            }
+
+            if (!word.isEmpty() && charPositions != null) {
+                int min = Math.min(i, j);
+                int max = Math.max(i, j);
+                if (min < 0) min = 0;
+                if (max >= word.length()) max = word.length() - 1;
+
+                int startX = charPositions[min];
+                int endX = (max < word.length())
+                         ? charPositions[max]
+                         : charPositions[word.length() - 1];
+
+                int lineY = baseline + 20;
+
+                g.setColor(Color.RED);
+                g.drawLine(startX, lineY, endX, lineY);
+            }
+        }
+    }
+}
