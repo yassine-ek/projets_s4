@@ -1,0 +1,648 @@
+package projet_v2;
+
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicSpinnerUI;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.Path2D;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+public class ProjetV5 extends JFrame {
+
+	private JTextField textFieldString;
+	private JTextField lengthField;
+	private JTextField resultCharField;
+	private JTextField resultSubstringField;
+	private JTextField resultSubstringSingleField;
+	private JTextField resultIndexOfField;
+	private JTextField resultToUpperField;
+	private JTextField resultToLowerField;
+
+	private JSpinner spinnerI;
+	private JSpinner spinnerJ;
+	private JComboBox<Example> exampleCombo;
+
+	private WordPanel wordPanel;
+	private boolean updatingFromSpinner = false;
+
+	// Exemples prédéfinis
+	private Example[] examples = {
+			new Example("Exemple 1: Bonjour (i=1, j=4)", "Bonjour", 1, 4),
+			new Example("Exemple 2: ABCDE (i=2, j=5)", "ABCDE", 2, 5),
+			new Example("Exemple 3: Hello World (i=0, j=5)", "Hello World", 0, 5)
+	};
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(() -> new ProjetV5().setVisible(true));
+	}
+
+	public ProjetV5() {
+		setTitle("Manipulation de chaînes Java");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(900, 600);
+		setLocationRelativeTo(null);
+
+		// Conteneur principal
+		JPanel contentPane = new JPanel(new BorderLayout(10, 10));
+		contentPane.setBorder(new EmptyBorder(15, 15, 15, 15));
+		setContentPane(contentPane);
+
+		// =======================
+		//        TOP PANEL
+		// =======================
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+		contentPane.add(topPanel, BorderLayout.NORTH);
+
+		// RANGÉE 1 : "String S = " + champ texte + boutons
+		JPanel row1 = new JPanel(new BorderLayout(10, 0));
+		JPanel inputPanel = new JPanel(new BorderLayout(5, 0));
+		JLabel labelMot = new JLabel("String s = ");
+		labelMot.setFont(new Font("Tahoma", Font.PLAIN, 14));
+
+		textFieldString = new JTextField();
+		textFieldString.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		// Validation par la touche Entrée
+		textFieldString.addActionListener(e -> {
+			onAfficher();
+			exampleCombo.setSelectedIndex(-1);
+		});
+		inputPanel.add(labelMot, BorderLayout.WEST);
+		inputPanel.add(textFieldString, BorderLayout.CENTER);
+
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+		JButton btnShow = new JButton("Afficher");
+		btnShow.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		JButton btnReset = new JButton("Réinitialiser");
+		btnReset.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		buttonPanel.add(btnShow);
+		buttonPanel.add(btnReset);
+
+		row1.add(inputPanel, BorderLayout.CENTER);
+		row1.add(buttonPanel, BorderLayout.EAST);
+		topPanel.add(row1);
+
+		// RANGÉE 2 : Spinners i et j
+		JPanel row2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
+		Font biggerFont = new Font("SansSerif", Font.BOLD, 18);
+
+		JLabel labelI = new JLabel("valeur de i : ");
+		labelI.setFont(new Font("SansSerif", Font.BOLD, 25));
+		row2.add(labelI);
+
+		// Création et personnalisation du spinner pour i (orange foncé)
+		spinnerI = new JSpinner(new SpinnerNumberModel(0, 0, 0, 1));
+		spinnerI.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		spinnerI.setOpaque(true);
+		spinnerI.setBackground(new Color(255,140,0)); // orange foncé
+		// Personnalisation de l'UI pour que les boutons restent en orange foncé
+		spinnerI.setUI(new BasicSpinnerUI() {
+			@Override
+			protected Component createNextButton() {
+				JButton btn = (JButton) super.createNextButton();
+				btn.setBackground(new Color(255,140,0));
+				btn.setOpaque(true);
+				return btn;
+			}
+			@Override
+			protected Component createPreviousButton() {
+				JButton btn = (JButton) super.createPreviousButton();
+				btn.setBackground(new Color(255,140,0));
+				btn.setOpaque(true);
+				return btn;
+			}
+		});
+		JTextField spinnerIField = ((JSpinner.DefaultEditor) spinnerI.getEditor()).getTextField();
+		spinnerIField.setFont(biggerFont);
+		spinnerIField.setOpaque(true);
+		spinnerIField.setBackground(new Color(255,140,0));
+		spinnerIField.setForeground(Color.WHITE);
+		row2.add(spinnerI);
+
+		JLabel labelJ = new JLabel("valeur de j : ");
+		labelJ.setFont(new Font("SansSerif", Font.BOLD, 25));
+		row2.add(labelJ);
+
+		// Création et personnalisation du spinner pour j (magenta)
+		spinnerJ = new JSpinner(new SpinnerNumberModel(0, 0, 0, 1));
+		spinnerJ.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		spinnerJ.setOpaque(true);
+		spinnerJ.setBackground(Color.MAGENTA);
+		spinnerJ.setUI(new BasicSpinnerUI() {
+			@Override
+			protected Component createNextButton() {
+				JButton btn = (JButton) super.createNextButton();
+				btn.setBackground(Color.MAGENTA);
+				btn.setOpaque(true);
+				return btn;
+			}
+			@Override
+			protected Component createPreviousButton() {
+				JButton btn = (JButton) super.createPreviousButton();
+				btn.setBackground(Color.MAGENTA);
+				btn.setOpaque(true);
+				return btn;
+			}
+		});
+		JTextField spinnerJField = ((JSpinner.DefaultEditor) spinnerJ.getEditor()).getTextField();
+		spinnerJField.setFont(biggerFont);
+		spinnerJField.setOpaque(true);
+		spinnerJField.setBackground(Color.MAGENTA);
+		spinnerJField.setForeground(Color.WHITE);
+		row2.add(spinnerJ);
+
+		topPanel.add(row2);
+
+		// RANGÉE 3 : ComboBox d'exemples
+		JPanel row3 = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+		JLabel labelEx = new JLabel("Exemples : ");
+		labelEx.setFont(new Font("SansSerif", Font.BOLD, 16));
+		row3.add(labelEx);
+
+		exampleCombo = new JComboBox<>(examples);
+		exampleCombo.setPreferredSize(new Dimension(350, 30));
+		exampleCombo.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		exampleCombo.setSelectedIndex(-1);
+		exampleCombo.addActionListener(e -> {
+			Example ex = (Example) exampleCombo.getSelectedItem();
+			if (ex != null) {
+				textFieldString.setText(ex.word);
+				wordPanel.setWord(ex.word);
+				lengthField.setText(String.valueOf(ex.word.length()));
+				SpinnerNumberModel modelI = new SpinnerNumberModel(0, 0, ex.word.length(), 1);
+				SpinnerNumberModel modelJ = new SpinnerNumberModel(0, 0, ex.word.length(), 1);
+				spinnerI.setModel(modelI);
+				spinnerJ.setModel(modelJ);
+				spinnerI.setValue(ex.i);
+				spinnerJ.setValue(ex.j);
+				updateValues();
+			}
+		});
+		row3.add(exampleCombo);
+		topPanel.add(row3);
+
+		// Boutons "Afficher" et "Réinitialiser"
+		btnShow.addActionListener(e -> {
+			onAfficher();
+			exampleCombo.setSelectedIndex(-1);
+		});
+		btnReset.addActionListener(e -> onReinitialiser());
+
+		// Listeners pour mise à jour en temps réel lors du changement de i/j
+		ChangeListener spinnerListener = new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				if (!updatingFromSpinner) {
+					updateValues();
+				}
+			}
+		};
+		spinnerI.addChangeListener(spinnerListener);
+		spinnerJ.addChangeListener(spinnerListener);
+
+		// =======================
+		//     CENTER PANEL (WordPanel)
+		// =======================
+		wordPanel = new WordPanel();
+		JScrollPane scrollCenter = new JScrollPane(wordPanel);
+		scrollCenter.setPreferredSize(new Dimension(0, 300));
+		contentPane.add(scrollCenter, BorderLayout.CENTER);
+
+		// =======================
+		//     BOTTOM PANEL (résultats)
+		// =======================
+		// Panel pour afficher les fonctions et résultats dans un JScrollPane
+		JPanel resultsPanel = new JPanel();
+		resultsPanel.setLayout(new BoxLayout(resultsPanel, BoxLayout.Y_AXIS));
+		resultsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+		// 1) s.length()
+		JPanel lengthRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+		JLabel lengthLabel = new JLabel("s.length() =");
+		lengthLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+		lengthField = new JTextField(20);
+		lengthField.setEditable(false);
+		lengthField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		lengthField.setForeground(Color.BLUE);
+		lengthRow.add(lengthLabel);
+		lengthRow.add(lengthField);
+		resultsPanel.add(lengthRow);
+
+		// 2) s.charAt(i)
+		JPanel charAtRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+		JLabel charAtLabel = new JLabel("s.charAt(i) =");
+		charAtLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+		resultCharField = new JTextField(20);
+		resultCharField.setEditable(false);
+		resultCharField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		resultCharField.setForeground(Color.BLUE);
+		charAtRow.add(charAtLabel);
+		charAtRow.add(resultCharField);
+		resultsPanel.add(charAtRow);
+
+		// 3) s.substring(i, j)
+		JPanel substringRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+		JLabel substringLabel = new JLabel("s.substring(i,j) =");
+		substringLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+		resultSubstringField = new JTextField(20);
+		resultSubstringField.setEditable(false);
+		resultSubstringField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		resultSubstringField.setForeground(Color.BLUE);
+		substringRow.add(substringLabel);
+		substringRow.add(resultSubstringField);
+		resultsPanel.add(substringRow);
+
+		// 4) s.substring(i)
+		JPanel substringSingleRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+		JLabel substringSingleLabel = new JLabel("s.substring(i) =");
+		substringSingleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+		resultSubstringSingleField = new JTextField(20);
+		resultSubstringSingleField.setEditable(false);
+		resultSubstringSingleField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		resultSubstringSingleField.setForeground(Color.BLUE);
+		substringSingleRow.add(substringSingleLabel);
+		substringSingleRow.add(resultSubstringSingleField);
+		resultsPanel.add(substringSingleRow);
+
+		// 5) s.indexOf(s.charAt(i))
+		JPanel indexOfRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+		JLabel indexOfLabel = new JLabel("s.indexOf(s.charAt(i)) =");
+		indexOfLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+		resultIndexOfField = new JTextField(20);
+		resultIndexOfField.setEditable(false);
+		resultIndexOfField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		resultIndexOfField.setForeground(Color.BLUE);
+		indexOfRow.add(indexOfLabel);
+		indexOfRow.add(resultIndexOfField);
+		resultsPanel.add(indexOfRow);
+
+		// 6) s.toUpperCase()
+		JPanel toUpperRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+		JLabel toUpperLabel = new JLabel("s.toUpperCase() =");
+		toUpperLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+		resultToUpperField = new JTextField(20);
+		resultToUpperField.setEditable(false);
+		resultToUpperField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		resultToUpperField.setForeground(Color.BLUE);
+		toUpperRow.add(toUpperLabel);
+		toUpperRow.add(resultToUpperField);
+		resultsPanel.add(toUpperRow);
+
+		// 7) s.toLowerCase()
+		JPanel toLowerRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+		JLabel toLowerLabel = new JLabel("s.toLowerCase() =");
+		toLowerLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+		resultToLowerField = new JTextField(20);
+		resultToLowerField.setEditable(false);
+		resultToLowerField.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		resultToLowerField.setForeground(Color.BLUE);
+		toLowerRow.add(toLowerLabel);
+		toLowerRow.add(resultToLowerField);
+		resultsPanel.add(toLowerRow);
+
+		// Icône d'aide en bas à droite
+		JLabel helpLabel = new JLabel("❓");
+		helpLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+		helpLabel.setToolTipText("Cliquez pour obtenir de l'aide sur le fonctionnement du programme.");
+		helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		helpLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JOptionPane.showMessageDialog(ProjetV5.this,
+						"Ce programme permet de visualiser différentes méthodes sur les chaînes de caractères en Java.\n" +
+								"• s.charAt(i) retourne le caractère à l'indice i.\n" +
+								"• s.substring(i, j) extrait la sous-chaîne de l'indice i (inclus) à j (exclu).\n" +
+								"• s.substring(i) extrait la sous-chaîne de l'indice i jusqu'à la fin.\n" +
+								"• s.indexOf(...) retourne la position d'une occurrence.\n" +
+								"• s.toUpperCase() et s.toLowerCase() convertissent la chaîne en majuscules ou minuscules.\n\n" +
+								"Utilisez les spinners ou cliquez/glissez sur le mot pour sélectionner les indices.\n" +
+								"La combo box d'exemples permet de pré-remplir le champ avec des cas d'utilisation.\n\n\n\\"+
+								"Réalisé par le bg de la promo EL KORAICHI Mohamed Yassine.\n",
+								"Aide", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+
+		JScrollPane scrollResults = new JScrollPane(resultsPanel);
+		scrollResults.setPreferredSize(new Dimension(0, 200));
+
+		JPanel bottomWrapper = new JPanel(new BorderLayout());
+		bottomWrapper.add(scrollResults, BorderLayout.CENTER);
+		bottomWrapper.add(helpLabel, BorderLayout.EAST);
+
+		contentPane.add(bottomWrapper, BorderLayout.SOUTH);
+
+		// Donner le focus au champ de saisie au démarrage
+		SwingUtilities.invokeLater(() -> textFieldString.requestFocusInWindow());
+	}
+
+	// Action du bouton "Afficher"
+	private void onAfficher() {
+		String word = textFieldString.getText();
+		wordPanel.setWord(word);
+		lengthField.setText(String.valueOf(word.length()));
+
+		SpinnerNumberModel modelI = new SpinnerNumberModel(0, 0, word.length(), 1);
+		SpinnerNumberModel modelJ = new SpinnerNumberModel(0, 0, word.length(), 1);
+		spinnerI.setModel(modelI);
+		spinnerJ.setModel(modelJ);
+		spinnerI.setValue(0);
+		spinnerJ.setValue(0);
+
+		updateValues();
+	}
+
+	// Action du bouton "Réinitialiser"
+	private void onReinitialiser() {
+		textFieldString.setText("");
+		wordPanel.setWord("");
+		lengthField.setText("");
+		spinnerI.setModel(new SpinnerNumberModel(0, 0, 0, 1));
+		spinnerJ.setModel(new SpinnerNumberModel(0, 0, 0, 1));
+		exampleCombo.setSelectedIndex(-1);
+
+		// Effacer les champs de résultat
+		resultCharField.setText("");
+		resultSubstringField.setText("");
+		resultSubstringSingleField.setText("");
+		resultIndexOfField.setText("");
+		resultToUpperField.setText("");
+		resultToLowerField.setText("");
+
+		textFieldString.requestFocusInWindow();
+	}
+
+	// Mise à jour des résultats
+	private void updateValues() {
+		String s = wordPanel.getWord();
+		if (s.isEmpty()) {
+			resultCharField.setText("");
+			resultSubstringField.setText("");
+			resultSubstringSingleField.setText("");
+			resultIndexOfField.setText("");
+			resultToUpperField.setText("");
+			resultToLowerField.setText("");
+			lengthField.setText("0");
+			return;
+		}
+
+		int i = (int) spinnerI.getValue();
+		int j = (int) spinnerJ.getValue();
+
+		// Vérification de i
+		if (i < 0 || i >= s.length()) {
+			JOptionPane.showMessageDialog(this,
+					"Index i invalide : doit être entre 0 et " + (s.length() - 1),
+					"Erreur de saisie", JOptionPane.ERROR_MESSAGE);
+			i = Math.max(0, Math.min(i, s.length() - 1));
+			updatingFromSpinner = true;
+			spinnerI.setValue(i);
+			updatingFromSpinner = false;
+		}
+
+		// Vérification de j
+		if (j < 0 || j > s.length()) {
+			JOptionPane.showMessageDialog(this,
+					"Index j invalide : doit être entre 0 et " + s.length(),
+					"Erreur de saisie", JOptionPane.ERROR_MESSAGE);
+			j = Math.max(0, Math.min(j, s.length()));
+			updatingFromSpinner = true;
+			spinnerJ.setValue(j);
+			updatingFromSpinner = false;
+		}
+
+		wordPanel.setI(i);
+		wordPanel.setJ(j);
+		wordPanel.repaint();
+
+		// Mise à jour des résultats
+		lengthField.setText(String.valueOf(s.length()));
+
+		// s.charAt(i)
+		if (i >= 0 && i < s.length()) {
+			resultCharField.setText("'" + s.charAt(i) + "'");
+		} else {
+			resultCharField.setText("Index i invalide");
+		}
+
+		// s.substring(i,j)
+		if (i > j) {
+			resultSubstringField.setText("Impossible (i > j)");
+		} else if (j > s.length()) {
+			resultSubstringField.setText("Impossible (j hors limites)");
+		} else {
+			resultSubstringField.setText("\"" + s.substring(i, j) + "\"");
+		}
+
+		// s.substring(i)
+		if (i >= s.length()) {
+			resultSubstringSingleField.setText("Impossible (i hors limites)");
+		} else {
+			resultSubstringSingleField.setText("\"" + s.substring(i) + "\"");
+		}
+
+		// s.indexOf(s.charAt(i))
+		if (i >= 0 && i < s.length()) {
+			char c = s.charAt(i);
+			resultIndexOfField.setText(String.valueOf(s.indexOf(c)));
+		} else {
+			resultIndexOfField.setText("Index i invalide");
+		}
+
+		// s.toUpperCase()
+		resultToUpperField.setText("\"" + s.toUpperCase() + "\"");
+
+		// s.toLowerCase()
+		resultToLowerField.setText("\"" + s.toLowerCase() + "\"");
+	}
+
+	// =======================
+	//       WORD PANEL
+	// =======================
+	class WordPanel extends JPanel {
+		private String word = "";
+		private int i = 0;
+		private int j = 0;
+		private Font bigFont = new Font("SansSerif", Font.BOLD, 36);
+
+		public WordPanel() {
+			setBackground(Color.WHITE);
+
+			MouseAdapter adapter = new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					int index = getCharIndexAtX(e.getX());
+					if (index != -1) {
+						setI(index);
+						setJ(index);
+						updatingFromSpinner = true;
+						spinnerI.setValue(i);
+						spinnerJ.setValue(j);
+						updatingFromSpinner = false;
+						updateValues();
+						repaint();
+					}
+				}
+				@Override
+				public void mouseDragged(MouseEvent e) {
+					int index = getCharIndexAtX(e.getX());
+					if (index != -1) {
+						setJ(index);
+						updatingFromSpinner = true;
+						spinnerJ.setValue(j);
+						updatingFromSpinner = false;
+						updateValues();
+						repaint();
+					}
+				}
+			};
+			addMouseListener(adapter);
+			addMouseMotionListener(adapter);
+		}
+
+		public String getWord() {
+			return word;
+		}
+		public void setWord(String w) {
+			word = (w == null) ? "" : w;
+			repaint();
+		}
+		public void setI(int newI) {
+			i = newI;
+			repaint();
+		}
+		public void setJ(int newJ) {
+			j = newJ;
+			repaint();
+		}
+
+		// Renvoie l'indice du caractère cliqué (ou -1)
+		private int getCharIndexAtX(int mouseX) {
+			if (word.isEmpty()) return -1;
+			FontMetrics fm = getFontMetrics(bigFont);
+			int totalWidth = 0;
+			for (int k = 0; k < word.length(); k++) {
+				totalWidth += fm.charWidth(word.charAt(k)) + 5;
+			}
+			if (totalWidth > 0) totalWidth -= 5;
+			int startX = (getWidth() - totalWidth) / 2;
+			int x = startX;
+			for (int k = 0; k < word.length(); k++) {
+				int charW = fm.charWidth(word.charAt(k));
+				if (mouseX >= x && mouseX <= x + charW) {
+					return k;
+				}
+				x += fm.charWidth(word.charAt(k)) + 5;
+			}
+			return -1;
+		}
+
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			g.setFont(bigFont);
+			FontMetrics fm = g.getFontMetrics();
+			int centerY = getHeight() / 2;
+			int baseline = centerY + fm.getAscent() / 2;
+
+			int totalWidth = 0;
+			for (int k = 0; k < word.length(); k++) {
+				totalWidth += fm.charWidth(word.charAt(k)) + 5;
+			}
+			if (totalWidth > 0) totalWidth -= 5;
+			int startX = (getWidth() - totalWidth) / 2;
+
+			int[] charPositions = new int[word.length()];
+			int x = startX;
+			for (int k = 0; k < word.length(); k++) {
+				g.drawString(String.valueOf(word.charAt(k)), x, baseline);
+				charPositions[k] = x;
+				x += fm.charWidth(word.charAt(k)) + 5;
+			}
+			if (word.isEmpty()) return;
+
+			Graphics2D g2 = (Graphics2D) g.create();
+
+			
+			// Surlignage de la plage [i, j)
+			if (i < j && i >= 0 && j <= word.length()) {
+				int xStart = charPositions[i];
+				int xEnd = (j < word.length())
+						? charPositions[j]
+								: (charPositions[word.length() - 1] + fm.charWidth(word.charAt(word.length() - 1)));
+
+				// couleur gris clair translucide
+				g2.setColor(new Color(211, 211, 211, 100));
+				int highlightWidth = xEnd - xStart;
+				g2.fillRect(xStart, baseline - fm.getAscent(),
+						highlightWidth, fm.getAscent() + fm.getDescent());
+
+				int lineY = baseline + 30;
+				g2.setStroke(new BasicStroke(3f));
+				g2.setColor(Color.LIGHT_GRAY);
+				g2.drawLine(xStart, lineY, xEnd, lineY);
+
+				// pastille 'i' centrée sur le caractère i
+				int iCenterX = xStart + fm.charWidth(word.charAt(i)) / 2;
+				drawIcon(g2, iCenterX, lineY, 15, 'i', new Color(255, 140, 0));
+
+				// pastille 'j' centrée sur le caractère j
+				int jCenterX = xEnd + fm.charWidth(word.charAt(j - 1)) / 2;
+				drawIcon(g2, jCenterX, lineY, 15, 'j', Color.MAGENTA);
+			}
+			// Surlignage d'un seul caractère si i == j
+			else if (i == j && i >= 0 && i < word.length()) {
+				int xStart = charPositions[i];
+				int charWidth = fm.charWidth(word.charAt(i));
+				int xEnd = xStart + charWidth;
+				// Remplacer la couleur cyan par gris clair translucide ici aussi
+				g2.setColor(new Color(211, 211, 211, 100));
+				g2.fillRect(xStart, baseline - fm.getAscent(), charWidth, fm.getAscent() + fm.getDescent());
+				int lineY = baseline + 30;
+				g2.setStroke(new BasicStroke(3f));
+				g2.setColor(Color.LIGHT_GRAY);
+				g2.drawLine(xStart, lineY, xEnd, lineY);
+				int iconCenterX = xStart + (charWidth / 2);
+				drawIcon(g2, iconCenterX, lineY, 15, 'i', new Color(255, 140, 0));
+			}
+			g2.dispose();
+		}
+
+		/**
+		 * Dessine un cercle coloré avec la lettre c dedans.
+		 */
+		private void drawIcon(Graphics2D g2, int centerX, int centerY, int radius, char c, Color color) {
+			g2.setColor(color);
+			int diameter = radius * 2;
+			g2.fillOval(centerX - radius, centerY - radius, diameter, diameter);
+			g2.setFont(new Font("SansSerif", Font.BOLD, radius));
+			FontMetrics fm = g2.getFontMetrics();
+			int charW = fm.charWidth(c);
+			int charH = fm.getAscent();
+			int textX = centerX - (charW / 2);
+			int textY = centerY + (charH / 3);
+			g2.setColor(Color.WHITE);
+			g2.drawString(String.valueOf(c), textX, textY);
+		}
+	}
+
+	/**
+	 * Classe pour stocker un exemple (mot + i + j).
+	 */
+	static class Example {
+		String label;
+		String word;
+		int i, j;
+		public Example(String label, String word, int i, int j) {
+			this.label = label;
+			this.word = word;
+			this.i = i;
+			this.j = j;
+		}
+		@Override
+		public String toString() {
+			return label;
+		}
+	}
+}
